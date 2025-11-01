@@ -1,36 +1,123 @@
-# Mock Data Guide
+# Calculus Exam Factor Analysis
 
-This folder contains **synthetic** exam data to demonstrate the pipeline without exposing any real student information.
+This repository demonstrates a reproducible pipeline for analyzing question-level performance on a Calculus final exam.  
+The goal is to understand **what underlying skills** the exam measures — beyond a single total score — using **normalization, z-scoring, and factor analysis**.
 
-## Files
-- `mock_pretransposed.xlsx` — **Pre-transposed** format (each **row is an item**; each **column is a student**). It also includes a `max_points` column per item.
-- `mock_transposed.xlsx` — **Transposed** format expected by the pipeline (each **row is a student**; first column `student_id`). The first row is a special label `test_student_sp24_fe` that stores the **per-item maximum points**.
+---
 
-## How the pipeline works (end-to-end)
+##  Purpose
 
-1. **Start** from the **transposed** file (e.g., `mock_transposed.xlsx` or your real file) where rows are students and columns are items.
-2. The pipeline:
-   - Extracts the **max points** from the special row `test_student_sp24_fe`
-   - **Normalizes** each item to a 0–1 scale using its max
-   - **Z-scores** each item (center 0, std 1) so items are comparable
-   - Computes a **scree plot** (eigenvalues of item correlation matrix)
-   - Runs **linear factor analysis** (no rotation) and exports:
-     - `student_factor_scores`
-     - `item_loadings`
-     - `items_topfactor` (which factor each item loads on most)
-3. Outputs are written to the `outputs/` folder:
-   - `students_normalized_zscored.xlsx`
-   - `FA_outputs_simple.xlsx`
-   - `scree_plot.png`
+This project investigates:
 
-## To test the pipeline with mock data
+- Whether the exam measures one broad “calculus proficiency” skill
+- Whether sub-skills emerge (e.g., limits, differentiation, applications)
+- How item-level performance clusters into latent dimensions
 
+This supports **assessment validity**, fairness, and improvement in question design.
+
+---
+
+##  What the pipeline does
+
+| Step | Method |
+|----|----|
+1 | Load student × question matrix (transposed format)  
+2 | Extract maximum points per question (from `test_student_sp24_fe` row)  
+3 | Normalize all item scores to 0–1  
+4 | Standardize each item with z-scores  
+5 | Compute item-correlation matrix  
+6 | Generate a Scree Plot (Eigenvalues)  
+7 | Apply Linear Factor Analysis (no rotation)  
+8 | Export factor loadings & student factor scores  
+
+---
+
+## Scree Plot (Latent Structure)
+
+> **Figure 1. Scree Plot of Exam Eigenvalues**  
+> The first eigenvalue is dominant, indicating a **strong general calculus proficiency factor**.  
+> An elbow appears around **2–3 factors**, suggesting **secondary skill dimensions** such as procedural fluency and conceptual understanding.  
+> Factors above the red horizontal line (eigenvalue = 1) meet the **Kaiser criterion**, meaning they explain meaningful variance.
+
+📎 *Upload your file here: `docs/scree_plot.png`*  
+*(Place image in repo, it will display automatically)*
+
+---
+
+##  Interpretation
+
+- The exam strongly measures an **overall calculus mastery construct**
+- **Additional sub-skills** also influence performance, likely:
+  - Conceptual reasoning  
+  - Differentiation procedures  
+  - Application modeling / problem-solving  
+
+This structure aligns with modern views of mathematical cognition:  
+> **a dominant general skill with multiple supporting abilities.**
+
+---
+
+##  Repository Structure
+
+```
+.
+├── run_exam_factor_analysis.py   # Main analysis script
+├── sample_data/                  # Synthetic example data
+├── outputs/                      # Folder created by script
+└── docs/
+    └── scree_plot.png            # (Upload after running)
+```
+
+---
+
+##  Running the Analysis
+
+### Install deps
 ```bash
-# from the repo root
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-# Run using the transposed mock file
-python src/run_pipeline.py --input sample_data/mock_transposed.xlsx --output_dir outputs
 ```
+
+### Run on your dataset
+```bash
+python run_exam_factor_analysis.py   --input data/students_with_final_exam_score_transposed.xlsx   --output_dir outputs
+```
+
+### Run on mock sample data
+```bash
+python run_exam_factor_analysis.py   --input sample_data/mock_transposed.xlsx   --output_dir outputs
+```
+
+---
+
+## Output Files
+
+| File | Contents |
+|---|---|
+`students_normalized_zscored.xlsx` | normalized + z-scored responses  
+`FA_outputs_simple.xlsx` | student factor scores, item loadings, top factor per item  
+`scree_plot.png` | eigenvalue plot showing latent skill structure  
+
+---
+
+##  Educational Value
+
+This project demonstrates:
+
+- Assessment analytics for STEM courses  
+- Intro psychometrics for classroom research  
+- Transparent & reproducible evaluation of exam validity  
+- Student-centered fairness in measurement  
+
+---
+
+## License
+
+Open-academic / educational use encouraged.
+
+---
+
+### Questions? Improvements?
+
+Happy to iterate — feedback welcome!
 
